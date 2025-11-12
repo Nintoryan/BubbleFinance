@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id        String   @id @default(uuid())
+  name      String
+  currency  String   // USD | RSD | RUB | VND | EUR
+  color     String   @default("#4F46E5")
+  icon      String   @default("wallet")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+
+  @@map("accounts")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  type      String   // INCOME | EXPENSE
+  color     String          @default("#6B7280")
+  icon      String          @default("tag")
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  transactions Transaction[]
+
+  @@unique([name, type])
+  @@map("categories")
+}
+
+model Transaction {
+  id         String   @id @default(uuid())
+  type       String   // INCOME | EXPENSE
+  accountId  String
+  categoryId String
+  amount     Int // храним в минимальных единицах (центах, копейках и т.д.)
+  currency   String   // USD | RSD | RUB | VND | EUR
+  date       DateTime
+  note       String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  account  Account  @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@map("transactions")
+}
+
+model Settings {
+  id          Int      @id @default(1)
+  baseCurrency String  @default("USD") // USD | RSD | RUB | VND | EUR
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("settings")
+}
+

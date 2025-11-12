@@ -1,0 +1,599 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Анимации для загрузчика */
+@keyframes pulse-scale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes bounce-down {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-25px) scale(1.05);
+  }
+  100% {
+    transform: translateY(calc(100vh + 100px)) scale(0.7);
+  }
+}
+
+.animate-pulse-scale {
+  animation: pulse-scale 1.2s ease-in-out infinite;
+}
+
+.animate-bounce-down {
+  animation: bounce-down 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+:root {
+  --background: #F3F4F6;
+  --foreground: #111827;
+  /* Переопределяем переменные Tremor для выпадающих списков */
+  --tremor-background: white;
+  --tremor-background-subtle: white;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+/* Мобильная оптимизация */
+@media (max-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+}
+
+/* Стили для tooltip'ов графиков Tremor/Recharts */
+.recharts-tooltip-wrapper,
+.recharts-default-tooltip {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  padding: 0.5rem !important;
+}
+
+.recharts-tooltip-wrapper *,
+.recharts-default-tooltip * {
+  background-color: white !important;
+  color: #111827 !important;
+}
+
+.recharts-tooltip-wrapper .recharts-tooltip-label,
+.recharts-default-tooltip .recharts-tooltip-label {
+  background-color: white !important;
+  color: #111827 !important;
+  font-weight: 500 !important;
+}
+
+.recharts-tooltip-wrapper .recharts-tooltip-item,
+.recharts-default-tooltip .recharts-tooltip-item {
+  background-color: white !important;
+  color: #111827 !important;
+}
+
+.recharts-tooltip-wrapper .recharts-tooltip-item-list,
+.recharts-default-tooltip .recharts-tooltip-item-list {
+  background-color: white !important;
+}
+
+/* Стили для выпадающих списков Tremor Select (Radix UI) - УНИВЕРСАЛЬНЫЕ */
+/* Портал для выпадающих списков */
+[data-radix-popper-content-wrapper],
+div[data-radix-popper-content-wrapper] {
+  z-index: 99999 !important;
+}
+
+/* Контейнер выпадающего списка */
+[data-radix-select-content],
+div[data-radix-select-content],
+[role="listbox"],
+div[role="listbox"] {
+  background-color: white !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  z-index: 99999 !important;
+  overflow: hidden !important;
+}
+
+/* Viewport внутри списка */
+[data-radix-select-viewport],
+div[data-radix-select-viewport] {
+  background-color: white !important;
+  background: white !important;
+  padding: 0.25rem !important;
+}
+
+/* Элементы списка */
+[data-radix-select-item],
+div[data-radix-select-item],
+[role="option"],
+div[role="option"] {
+  background-color: white !important;
+  background: white !important;
+  color: #111827 !important;
+  padding: 0.5rem 0.75rem !important;
+  cursor: pointer !important;
+  outline: none !important;
+}
+
+[data-radix-select-item]:hover,
+[data-radix-select-item][data-highlighted],
+[role="option"]:hover,
+[role="option"][data-highlighted] {
+  background-color: #f3f4f6 !important;
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+[data-radix-select-item][data-state="checked"],
+[role="option"][data-state="checked"] {
+  background-color: #e5e7eb !important;
+  background: #e5e7eb !important;
+}
+
+/* ВСЕ элементы внутри выпадающего списка должны иметь белый фон */
+[data-radix-select-content] *,
+[data-radix-select-content] > *,
+[data-radix-select-viewport] *,
+[data-radix-select-viewport] > *,
+[role="listbox"] *,
+[role="listbox"] > * {
+  background-color: white !important;
+  background: white !important;
+}
+
+/* Специфичные стили для Tremor классов */
+[class*="SelectContent"],
+[class*="SelectViewport"],
+[class*="SelectItem"],
+[class*="select-content"],
+[class*="select-viewport"],
+[class*="select-item"] {
+  background-color: white !important;
+  background: white !important;
+}
+
+/* Убираем overflow для Card, чтобы выпадающие списки не обрезались */
+.tremor-Card,
+[class*="tremor-Card"],
+[class*="Card"] {
+  overflow: visible !important;
+}
+
+/* Убираем overflow для всех Card компонентов и контейнеров форм */
+div[class*="Card"],
+form {
+  overflow: visible !important;
+}
+
+/* Убеждаемся, что выпадающие списки рендерятся поверх всего */
+body > [data-radix-popper-content-wrapper],
+body > div[data-radix-popper-content-wrapper] {
+  z-index: 99999 !important;
+}
+
+/* Глобальный стиль для всех div внутри портала Radix */
+[data-radix-popper-content-wrapper] div,
+[data-radix-popper-content-wrapper] > div,
+[data-radix-popper-content-wrapper] * {
+  background-color: white !important;
+  background: white !important;
+}
+
+/* Дополнительные стили для всех возможных вариантов выпадающих списков */
+div[style*="background"]:has([data-radix-select-content]),
+div:has([data-radix-select-content]),
+div:has([role="listbox"]) {
+  background-color: white !important;
+  background: white !important;
+}
+
+/* Стили для всех элементов с атрибутами Radix */
+[data-radix-portal] {
+  z-index: 99999 !important;
+}
+
+[data-radix-portal] * {
+  background-color: white !important;
+  background: white !important;
+}
+
+/* Универсальный стиль для всех выпадающих списков - последняя попытка */
+body > div:has([data-radix-select-content]),
+body > div:has([role="listbox"]) {
+  z-index: 99999 !important;
+}
+
+body > div:has([data-radix-select-content]) *,
+body > div:has([role="listbox"]) * {
+  background-color: white !important;
+  background: white !important;
+}
+
+/* АБСОЛЮТНО ВСЕ элементы, которые могут быть выпадающими списками */
+div[class*="Select"],
+div[class*="select"],
+div[class*="Dropdown"],
+div[class*="dropdown"],
+div[class*="Menu"],
+div[class*="menu"],
+div[class*="Popover"],
+div[class*="popover"] {
+  background-color: white !important;
+  background: white !important;
+}
+
+div[class*="Select"] *,
+div[class*="select"] *,
+div[class*="Dropdown"] *,
+div[class*="dropdown"] *,
+div[class*="Menu"] *,
+div[class*="menu"] *,
+div[class*="Popover"] *,
+div[class*="popover"] * {
+  background-color: white !important;
+  background: white !important;
+}
+
+/* Стили для всех элементов с прозрачным фоном внутри порталов */
+[data-radix-popper-content-wrapper] [style*="background"],
+[data-radix-popper-content-wrapper] [style*="transparent"],
+[data-radix-portal] [style*="background"],
+[data-radix-portal] [style*="transparent"] {
+  background-color: white !important;
+  background: white !important;
+}
+
+
+/* Стили для всех элементов с data-атрибутами Radix, независимо от их расположения */
+[data-radix-select-content],
+[data-radix-select-viewport],
+[data-radix-select-item],
+[data-radix-popper-content-wrapper] > div,
+[data-radix-popper-content-wrapper] > div > div {
+  background-color: white !important;
+  background: white !important;
+  background-image: none !important;
+}
+
+/* Переопределяем все возможные варианты прозрачности */
+[style*="rgba(0, 0, 0, 0)"],
+[style*="transparent"],
+[style*="background: transparent"],
+[style*="background-color: transparent"] {
+  background-color: white !important;
+  background: white !important;
+}
+
+/* Стили для графиков Tremor - чтобы значения на оси Y всегда влезали */
+.recharts-wrapper {
+  overflow: visible !important;
+}
+
+.recharts-cartesian-axis {
+  overflow: visible !important;
+}
+
+.recharts-cartesian-axis-tick {
+  overflow: visible !important;
+}
+
+.recharts-cartesian-axis-tick-value {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+}
+
+/* Увеличиваем отступы для оси Y */
+.recharts-yAxis {
+  width: auto !important;
+  min-width: 60px !important;
+  padding-right: 8px !important;
+}
+
+.recharts-yAxis .recharts-cartesian-axis-tick {
+  text-anchor: end !important;
+}
+
+.recharts-yAxis .recharts-cartesian-axis-tick-value {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+}
+
+/* Убеждаемся, что контейнер графика имеет достаточно места */
+.recharts-surface {
+  overflow: visible !important;
+}
+
+/* Для мобильных устройств - еще больше места */
+@media (max-width: 768px) {
+  .recharts-yAxis {
+    min-width: 70px !important;
+    padding-right: 12px !important;
+  }
+  
+  .recharts-yAxis .recharts-cartesian-axis-tick-value {
+    font-size: 10px !important;
+  }
+}
+
+/* Цвет столбцов для BarChart - переопределяем черный цвет на #2F71F0 */
+.recharts-bar-rectangle,
+.recharts-bar .recharts-bar-rectangle,
+.recharts-bar-rectangles .recharts-bar-rectangle {
+  fill: #2F71F0 !important;
+  stroke: #2F71F0 !important;
+}
+
+/* Переопределяем все возможные варианты черного цвета */
+.recharts-bar-rectangle[fill="#000000"],
+.recharts-bar-rectangle[fill="black"],
+.recharts-bar-rectangle[fill="#000"],
+.recharts-bar-rectangle[fill="rgb(0, 0, 0)"],
+.recharts-bar-rectangle[fill="rgba(0, 0, 0, 1)"] {
+  fill: #2F71F0 !important;
+  stroke: #2F71F0 !important;
+}
+
+/* Для всех SVG элементов столбцов */
+.recharts-bar rect,
+.recharts-bar-rectangles rect {
+  fill: #2F71F0 !important;
+  stroke: #2F71F0 !important;
+}
+
+/* Переопределяем через CSS переменные, если Tremor использует их */
+.recharts-bar,
+.recharts-bar-chart {
+  --tremor-chart-color-0: #2F71F0 !important;
+  --chart-color-0: #2F71F0 !important;
+}
+
+/* Универсальное переопределение для всех элементов с fill */
+.recharts-bar [fill],
+.recharts-bar-rectangles [fill] {
+  fill: #2F71F0 !important;
+}
+
+/* Цвета для DonutChart - переопределяем черный цвет на дружественные для дальтоников */
+.recharts-pie-sector,
+.recharts-pie .recharts-pie-sector,
+.recharts-sector,
+.recharts-pie path,
+.recharts-pie-sector path,
+.recharts-sector path {
+  stroke: white !important;
+  stroke-width: 2 !important;
+}
+
+/* Переопределяем черный цвет в DonutChart */
+.recharts-pie-sector[fill="#000000"],
+.recharts-pie-sector[fill="black"],
+.recharts-pie-sector[fill="#000"],
+.recharts-pie-sector[fill="rgb(0, 0, 0)"],
+.recharts-pie-sector[fill="rgba(0, 0, 0, 1)"],
+.recharts-pie path[fill="#000000"],
+.recharts-pie path[fill="black"],
+.recharts-pie path[fill="#000"] {
+  fill: #4472C4 !important;
+}
+
+/* Универсальное переопределение для всех элементов pie chart с черным fill */
+.recharts-pie [fill="#000000"],
+.recharts-pie [fill="black"],
+.recharts-pie [fill="#000"],
+.recharts-pie-sector [fill="#000000"],
+.recharts-pie-sector [fill="black"],
+.recharts-pie-sector [fill="#000"],
+.recharts-sector [fill="#000000"],
+.recharts-sector [fill="black"],
+.recharts-sector [fill="#000"] {
+  fill: #4472C4 !important;
+}
+
+/* Применяем цвета из палитры по порядку для всех секторов */
+.recharts-pie-sector:nth-child(1),
+.recharts-pie-sector:nth-of-type(1) {
+  fill: #4472C4 !important;
+}
+
+.recharts-pie-sector:nth-child(2),
+.recharts-pie-sector:nth-of-type(2) {
+  fill: #ED7D31 !important;
+}
+
+.recharts-pie-sector:nth-child(3),
+.recharts-pie-sector:nth-of-type(3) {
+  fill: #70AD47 !important;
+}
+
+.recharts-pie-sector:nth-child(4),
+.recharts-pie-sector:nth-of-type(4) {
+  fill: #FFC000 !important;
+}
+
+.recharts-pie-sector:nth-child(5),
+.recharts-pie-sector:nth-of-type(5) {
+  fill: #5B9BD5 !important;
+}
+
+.recharts-pie-sector:nth-child(6),
+.recharts-pie-sector:nth-of-type(6) {
+  fill: #7030A0 !important;
+}
+
+.recharts-pie-sector:nth-child(7),
+.recharts-pie-sector:nth-of-type(7) {
+  fill: #C55A11 !important;
+}
+
+.recharts-pie-sector:nth-child(8),
+.recharts-pie-sector:nth-of-type(8) {
+  fill: #A5A5A5 !important;
+}
+
+.recharts-pie-sector:nth-child(9),
+.recharts-pie-sector:nth-of-type(9) {
+  fill: #2F71F0 !important;
+}
+
+.recharts-pie-sector:nth-child(10),
+.recharts-pie-sector:nth-of-type(10) {
+  fill: #E74C3C !important;
+}
+
+.recharts-pie-sector:nth-child(11),
+.recharts-pie-sector:nth-of-type(11) {
+  fill: #1ABC9C !important;
+}
+
+.recharts-pie-sector:nth-child(12),
+.recharts-pie-sector:nth-of-type(12) {
+  fill: #9B59B6 !important;
+}
+
+/* Универсальное переопределение для всех path элементов в pie chart */
+.recharts-pie path:nth-child(1),
+.recharts-pie path:nth-of-type(1) {
+  fill: #4472C4 !important;
+}
+
+.recharts-pie path:nth-child(2),
+.recharts-pie path:nth-of-type(2) {
+  fill: #ED7D31 !important;
+}
+
+.recharts-pie path:nth-child(3),
+.recharts-pie path:nth-of-type(3) {
+  fill: #70AD47 !important;
+}
+
+.recharts-pie path:nth-child(4),
+.recharts-pie path:nth-of-type(4) {
+  fill: #FFC000 !important;
+}
+
+.recharts-pie path:nth-child(5),
+.recharts-pie path:nth-of-type(5) {
+  fill: #5B9BD5 !important;
+}
+
+.recharts-pie path:nth-child(6),
+.recharts-pie path:nth-of-type(6) {
+  fill: #7030A0 !important;
+}
+
+.recharts-pie path:nth-child(7),
+.recharts-pie path:nth-of-type(7) {
+  fill: #C55A11 !important;
+}
+
+.recharts-pie path:nth-child(8),
+.recharts-pie path:nth-of-type(8) {
+  fill: #A5A5A5 !important;
+}
+
+.recharts-pie path:nth-child(9),
+.recharts-pie path:nth-of-type(9) {
+  fill: #2F71F0 !important;
+}
+
+.recharts-pie path:nth-child(10),
+.recharts-pie path:nth-of-type(10) {
+  fill: #E74C3C !important;
+}
+
+.recharts-pie path:nth-child(11),
+.recharts-pie path:nth-of-type(11) {
+  fill: #1ABC9C !important;
+}
+
+.recharts-pie path:nth-child(12),
+.recharts-pie path:nth-of-type(12) {
+  fill: #9B59B6 !important;
+}
+
+/* Переопределяем все черные элементы в pie chart */
+.recharts-pie [fill*="000"],
+.recharts-pie [fill*="black"],
+.recharts-pie-sector [fill*="000"],
+.recharts-pie-sector [fill*="black"] {
+  fill: #4472C4 !important;
+}
+
+/* АБСОЛЮТНО ВСЕ элементы внутри pie chart - применяем цвета по порядку */
+.recharts-pie > *:nth-child(1) [fill],
+.recharts-pie > *:nth-of-type(1) [fill] {
+  fill: #4472C4 !important;
+}
+
+.recharts-pie > *:nth-child(2) [fill],
+.recharts-pie > *:nth-of-type(2) [fill] {
+  fill: #ED7D31 !important;
+}
+
+.recharts-pie > *:nth-child(3) [fill],
+.recharts-pie > *:nth-of-type(3) [fill] {
+  fill: #70AD47 !important;
+}
+
+.recharts-pie > *:nth-child(4) [fill],
+.recharts-pie > *:nth-of-type(4) [fill] {
+  fill: #FFC000 !important;
+}
+
+.recharts-pie > *:nth-child(5) [fill],
+.recharts-pie > *:nth-of-type(5) [fill] {
+  fill: #5B9BD5 !important;
+}
+
+.recharts-pie > *:nth-child(6) [fill],
+.recharts-pie > *:nth-of-type(6) [fill] {
+  fill: #7030A0 !important;
+}
+
+.recharts-pie > *:nth-child(7) [fill],
+.recharts-pie > *:nth-of-type(7) [fill] {
+  fill: #C55A11 !important;
+}
+
+.recharts-pie > *:nth-child(8) [fill],
+.recharts-pie > *:nth-of-type(8) [fill] {
+  fill: #A5A5A5 !important;
+}
+
+.recharts-pie > *:nth-child(9) [fill],
+.recharts-pie > *:nth-of-type(9) [fill] {
+  fill: #2F71F0 !important;
+}
+
+.recharts-pie > *:nth-child(10) [fill],
+.recharts-pie > *:nth-of-type(10) [fill] {
+  fill: #E74C3C !important;
+}
+
+.recharts-pie > *:nth-child(11) [fill],
+.recharts-pie > *:nth-of-type(11) [fill] {
+  fill: #1ABC9C !important;
+}
+
+.recharts-pie > *:nth-child(12) [fill],
+.recharts-pie > *:nth-of-type(12) [fill] {
+  fill: #9B59B6 !important;
+}
+
