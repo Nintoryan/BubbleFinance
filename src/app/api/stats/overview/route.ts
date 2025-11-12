@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       }, 0)
 
       // Конвертируем в базовую валюту
-      const convertedBalance = await convert(accountBalance, account.currency, baseCurrency)
+      const convertedBalance = await convert(accountBalance, account.currency as Currency, baseCurrency)
       totalBalance += convertedBalance
     }
 
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
       const dayKey = format(transaction.date, 'yyyy-MM-dd')
       const convertedAmount = await convert(
         transaction.amount,
-        transaction.currency,
+        transaction.currency as Currency,
         baseCurrency
       )
 
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
       const categoryName = transaction.category.name
       const convertedAmount = await convert(
         transaction.amount,
-        transaction.currency,
+        transaction.currency as Currency,
         baseCurrency
       )
       expensesByCategory[categoryName] =

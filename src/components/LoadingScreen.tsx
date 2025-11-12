@@ -73,7 +73,7 @@ export default function LoadingScreen() {
         className={`relative ${
           phase === 'loading' ? 'animate-pulse-scale' : phase === 'bounce' ? 'animate-bounce-down' : ''
         } ${
-          phase === 'fade-bg' || phase === 'hidden' ? 'opacity-0' : 'opacity-100'
+          phase === 'fade-bg' ? 'opacity-0' : 'opacity-100'
         }`}
         style={{
           transition: phase === 'fade-bg' ? 'opacity 0s' : 'none', // Мгновенное скрытие при fade-bg

@@ -4,6 +4,16 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Обрабатываем корневой путь
+  if (pathname === '/') {
+    const authCookie = request.cookies.get('auth')
+    if (authCookie) {
+      return NextResponse.redirect(new URL('/app', request.url))
+    } else {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+  }
+
   // Разрешаем доступ к публичным маршрутам
   if (pathname === '/login' || pathname.startsWith('/api/login')) {
     return NextResponse.next()
@@ -27,6 +37,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/app/:path*', '/api/:path*'],
+  matcher: ['/', '/app/:path*', '/api/:path*'],
 }
 
