@@ -37,21 +37,40 @@ export default function DashboardPage() {
         fetch('/api/settings'),
       ])
 
-      const accountsData = await accountsRes.json()
-      const settings = await settingsRes.json()
+      // Проверяем статус ответа перед парсингом JSON
+      if (!accountsRes.ok) {
+        console.error('Failed to fetch accounts:', accountsRes.status)
+        setAccounts([]) // Устанавливаем пустой массив при ошибке
+      } else {
+        const accountsData = await accountsRes.json()
+        // Убеждаемся, что это массив
+        setAccounts(Array.isArray(accountsData) ? accountsData : [])
+      }
 
-      setAccounts(accountsData)
-      setBaseCurrency(settings.baseCurrency)
+      let currentBaseCurrency: Currency = 'USD' // Fallback значение
+      if (!settingsRes.ok) {
+        console.error('Failed to fetch settings:', settingsRes.status)
+        setBaseCurrency('USD') // Fallback значение
+      } else {
+        const settings = await settingsRes.json()
+        currentBaseCurrency = (settings.baseCurrency || 'USD') as Currency
+        setBaseCurrency(currentBaseCurrency)
+      }
 
       // Загружаем статистику за последние 30 дней
       const to = new Date()
       const from = new Date(to.getTime() - 30 * 24 * 60 * 60 * 1000)
 
       const statsRes = await fetch(
-        `/api/stats/overview?from=${from.toISOString().split('T')[0]}&to=${to.toISOString().split('T')[0]}&baseCurrency=${settings.baseCurrency}`
+        `/api/stats/overview?from=${from.toISOString().split('T')[0]}&to=${to.toISOString().split('T')[0]}&baseCurrency=${currentBaseCurrency}`
       )
-      const statsData = await statsRes.json()
-      setStats(statsData)
+      if (statsRes.ok) {
+        const statsData = await statsRes.json()
+        setStats(statsData)
+      } else {
+        console.error('Failed to fetch stats:', statsRes.status)
+        setStats(null)
+      }
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {

@@ -32,8 +32,13 @@ export default function EditAccountPage() {
   const loadAccount = async () => {
     try {
       const res = await fetch('/api/accounts')
+      if (!res.ok) {
+        console.error('Failed to fetch accounts:', res.status)
+        return
+      }
       const accounts = await res.json()
-      const account = accounts.find((a: any) => a.id === id)
+      const accountsArray = Array.isArray(accounts) ? accounts : []
+      const account = accountsArray.find((a: any) => a.id === id)
       if (account) {
         setFormData({
           name: account.name,

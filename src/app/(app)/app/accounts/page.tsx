@@ -28,10 +28,17 @@ export default function AccountsPage() {
   const loadAccounts = async () => {
     try {
       const res = await fetch('/api/accounts')
+      if (!res.ok) {
+        console.error('Failed to fetch accounts:', res.status)
+        setAccounts([]) // Устанавливаем пустой массив при ошибке
+        return
+      }
       const data = await res.json()
-      setAccounts(data)
+      // Убеждаемся, что это массив
+      setAccounts(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error loading accounts:', error)
+      setAccounts([]) // Устанавливаем пустой массив при ошибке
     } finally {
       setLoading(false)
     }

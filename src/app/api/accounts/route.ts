@@ -12,29 +12,47 @@ export async function GET() {
     // Вычисляем баланс для каждого счета
     const accountsWithBalance = await Promise.all(
       accounts.map(async (account) => {
-        const transactions = await prisma.transaction.findMany({
-          where: { accountId: account.id },
-        })
+        try {
+          const transactions = await prisma.transaction.findMany({
+            where: { accountId: account.id },
+          })
 
-        const balance = transactions.reduce((sum, t) => {
-          if (t.type === 'INCOME') {
-            return sum + t.amount
-          } else {
-            return sum - t.amount
+          const balance = transactions.reduce((sum, t) => {
+            if (t.type === 'INCOME') {
+              return sum + t.amount
+            } else {
+              return sum - t.amount
+            }
+          }, 0)
+
+          return {
+            ...account,
+            balance,
           }
-        }, 0)
-
-        return {
-          ...account,
-          balance,
+        } catch (error) {
+          console.error(`Error calculating balance for account ${account.id}:`, error)
+          // Возвращаем счет с нулевым балансом при ошибке
+          return {
+            ...account,
+            balance: 0,
+          }
         }
       })
     )
 
-    return NextResponse.json(accountsWithBalance)
+    // Всегда возвращаем массив, даже если пустой
+    return NextResponse.json(accountsWithBalance || [])
   } catch (error) {
-    console.error('Error fetching accounts:', error)
-    return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 })
+    // Детальное логирование для отладки на Vercel
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+    console.error('Error fetching accounts:', {
+      message: errorMessage,
+      stack: errorStack,
+      error: error,
+    })
+    // Возвращаем пустой массив вместо объекта ошибки, чтобы клиент не падал
+    return NextResponse.json([], { status: 500 })
   }
 }
 

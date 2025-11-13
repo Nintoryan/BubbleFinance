@@ -56,17 +56,24 @@ export default function NewTransactionPage() {
   const loadData = async () => {
     try {
       const res = await fetch('/api/accounts')
+      if (!res.ok) {
+        console.error('Failed to fetch accounts:', res.status)
+        setAccounts([])
+        return
+      }
       const data = await res.json()
-      setAccounts(data)
-      if (data.length > 0) {
+      const accountsArray = Array.isArray(data) ? data : []
+      setAccounts(accountsArray)
+      if (accountsArray.length > 0) {
         setFormData((prev) => ({
           ...prev,
-          accountId: data[0].id,
-          currency: data[0].currency,
+          accountId: accountsArray[0].id,
+          currency: accountsArray[0].currency,
         }))
       }
     } catch (error) {
       console.error('Error loading data:', error)
+      setAccounts([])
     }
   }
 

@@ -45,10 +45,16 @@ export default function TransactionsPage() {
   const loadAccounts = async () => {
     try {
       const res = await fetch('/api/accounts')
+      if (!res.ok) {
+        console.error('Failed to fetch accounts:', res.status)
+        setAccounts([])
+        return
+      }
       const data = await res.json()
-      setAccounts(data)
+      setAccounts(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error loading accounts:', error)
+      setAccounts([])
     }
   }
 
