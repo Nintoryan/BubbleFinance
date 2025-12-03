@@ -200,12 +200,14 @@ export async function GET(request: NextRequest) {
 
     // Расходы по категориям
     const expensesByCategory: Record<string, number> = {}
-    const expenseTransactions = convertedTransactions.filter((t) => t.type === 'EXPENSE')
+    const expenseTransactions = convertedTransactions.filter((t) => t.type === 'EXPENSE' && t.category !== null)
 
     for (const transaction of expenseTransactions) {
-      const categoryName = transaction.category.name
-      expensesByCategory[categoryName] =
-        (expensesByCategory[categoryName] || 0) + transaction.convertedAmount
+      if (transaction.category) {
+        const categoryName = transaction.category.name
+        expensesByCategory[categoryName] =
+          (expensesByCategory[categoryName] || 0) + transaction.convertedAmount
+      }
     }
 
     // Форматируем данные для графиков

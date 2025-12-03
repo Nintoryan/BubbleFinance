@@ -27,6 +27,7 @@ export default function EditAccountPage() {
 
   useEffect(() => {
     loadAccount()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   const loadAccount = async () => {

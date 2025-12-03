@@ -56,6 +56,7 @@ export default function AnalyticsPage() {
     if (baseCurrency) {
       loadStats()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [from, to, baseCurrency])
 
   // Применяем цвета к DonutChart после рендеринга
@@ -118,6 +119,7 @@ export default function AnalyticsPage() {
         observer.disconnect()
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stats?.expensesByCategory])
 
   const loadSettings = async () => {
