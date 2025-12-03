@@ -10,31 +10,36 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type')
     const accountId = searchParams.get('accountId')
 
-    const where: any = {}
+    const whereConditions: any[] = []
 
     if (from || to) {
-      where.date = {}
+      const dateCondition: any = {}
       if (from) {
-        where.date.gte = new Date(from)
+        dateCondition.gte = new Date(from)
       }
       if (to) {
         const toDate = new Date(to)
         toDate.setHours(23, 59, 59, 999)
-        where.date.lte = toDate
+        dateCondition.lte = toDate
       }
+      whereConditions.push({ date: dateCondition })
     }
 
     if (type && type !== 'ALL') {
-      where.type = type
+      whereConditions.push({ type })
     }
 
     // Если фильтруем по accountId, показываем транзакции где счет является основным ИЛИ получателем (для конвертаций)
     if (accountId) {
-      where.OR = [
-        { accountId: accountId },
-        { toAccountId: accountId },
-      ]
+      whereConditions.push({
+        OR: [
+          { accountId: accountId },
+          { toAccountId: accountId },
+        ],
+      })
     }
+
+    const where = whereConditions.length > 0 ? { AND: whereConditions } : {}
 
     const transactions = await prisma.transaction.findMany({
       where,
