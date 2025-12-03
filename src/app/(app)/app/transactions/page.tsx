@@ -43,6 +43,7 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     loadTransactions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters])
 
   const loadAccounts = async () => {

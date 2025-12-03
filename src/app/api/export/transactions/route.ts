@@ -26,20 +26,24 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         account: true,
+        toAccount: true,
         category: true,
       },
       orderBy: { date: 'desc' },
     })
 
     // Формируем CSV
-    const headers = ['id', 'type', 'accountName', 'categoryName', 'amount', 'currency', 'date', 'note']
+    const headers = ['id', 'type', 'accountName', 'toAccountName', 'categoryName', 'amount', 'currency', 'toAmount', 'toCurrency', 'date', 'note']
     const rows = transactions.map((t) => [
       t.id,
       t.type,
       t.account.name,
-      t.category.name,
+      t.toAccount?.name || '',
+      t.category?.name || '',
       (t.amount / 100).toFixed(2), // конвертируем в основные единицы
       t.currency,
+      t.toAmount !== null ? (t.toAmount / 100).toFixed(2) : '',
+      t.toCurrency || '',
       t.date.toISOString(),
       t.note || '',
     ])

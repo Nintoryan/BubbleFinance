@@ -58,6 +58,7 @@ export default function NewTransactionPage() {
         setFormData((prev) => ({ ...prev, currency: account.currency }))
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.accountId, accounts])
 
   // Устанавливаем валюту получателя при выборе счёта получателя
@@ -68,6 +69,7 @@ export default function NewTransactionPage() {
         setFormData((prev) => ({ ...prev, toCurrency: account.currency }))
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.toAccountId, accounts])
 
   const loadData = async () => {
