@@ -26,6 +26,7 @@ export async function PUT(
       data: updateData,
       include: {
         account: true,
+        toAccount: true,
         category: true,
       },
     })

@@ -15,7 +15,10 @@ interface Transaction {
   date: string
   note: string | null
   account: { name: string; currency: Currency }
-  category: { name: string; color: string; icon: string }
+  toAccount: { name: string; currency: Currency } | null
+  toAmount: number | null
+  toCurrency: Currency | null
+  category: { name: string; color: string; icon: string } | null
 }
 
 interface Account {
@@ -115,6 +118,7 @@ export default function TransactionsPage() {
               <SelectItem value="ALL">Все</SelectItem>
               <SelectItem value="INCOME">Доход</SelectItem>
               <SelectItem value="EXPENSE">Расход</SelectItem>
+              <SelectItem value="CONVERSION">Конвертация</SelectItem>
             </Select>
           </div>
           <div>
@@ -163,45 +167,91 @@ export default function TransactionsPage() {
             <Card key={transaction.id} className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3 flex-1">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm"
-                    style={{ backgroundColor: transaction.category.color }}
-                  >
-                    {transaction.category.icon === 'utensils' && '🍽️'}
-                    {transaction.category.icon === 'car' && '🚗'}
-                    {transaction.category.icon === 'home' && '🏠'}
-                    {transaction.category.icon === 'subscription' && '📱'}
-                    {transaction.category.icon === 'briefcase' && '💼'}
-                    {transaction.category.icon === 'laptop' && '💻'}
-                    {!['utensils', 'car', 'home', 'subscription', 'briefcase', 'laptop'].includes(
-                      transaction.category.icon
-                    ) && '🏷️'}
-                  </div>
+                  {transaction.type === 'CONVERSION' ? (
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm bg-blue-500">
+                      🔄
+                    </div>
+                  ) : (
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm"
+                      style={{
+                        backgroundColor: transaction.category?.color || '#6B7280',
+                      }}
+                    >
+                      {transaction.category?.icon === 'utensils' && '🍽️'}
+                      {transaction.category?.icon === 'car' && '🚗'}
+                      {transaction.category?.icon === 'home' && '🏠'}
+                      {transaction.category?.icon === 'subscription' && '📱'}
+                      {transaction.category?.icon === 'briefcase' && '💼'}
+                      {transaction.category?.icon === 'laptop' && '💻'}
+                      {transaction.category &&
+                        !['utensils', 'car', 'home', 'subscription', 'briefcase', 'laptop'].includes(
+                          transaction.category.icon
+                        ) && '🏷️'}
+                      {!transaction.category && '🏷️'}
+                    </div>
+                  )}
                   <div className="flex-1">
-                    <Text className="font-medium">{transaction.category.name}</Text>
-                    <Text className="text-sm text-gray-500">
-                      {format(new Date(transaction.date), 'dd.MM.yyyy')} • {transaction.account.name}
+                    <Text className="font-medium">
+                      {transaction.type === 'CONVERSION'
+                        ? 'Конвертация'
+                        : transaction.category?.name || 'Без категории'}
                     </Text>
+                    {transaction.type === 'CONVERSION' ? (
+                      <div className="text-sm text-gray-500 mt-1">
+                        <div>
+                          {format(new Date(transaction.date), 'dd.MM.yyyy')} • {transaction.account.name} →{' '}
+                          {transaction.toAccount?.name || 'Неизвестный счёт'}
+                        </div>
+                      </div>
+                    ) : (
+                      <Text className="text-sm text-gray-500">
+                        {format(new Date(transaction.date), 'dd.MM.yyyy')} • {transaction.account.name}
+                      </Text>
+                    )}
                     {transaction.note && (
                       <Text className="text-sm text-gray-400 mt-1">{transaction.note}</Text>
                     )}
                   </div>
                 </div>
                 <div className="text-right">
-                  <Text
-                    className={`font-semibold text-lg ${
-                      transaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
-                    {transaction.type === 'INCOME' ? '+' : '-'}
-                    {formatAmount(transaction.amount, transaction.currency)}
-                  </Text>
-                  <button
-                    onClick={() => handleDelete(transaction.id)}
-                    className="text-red-600 text-xs mt-1"
-                  >
-                    Удалить
-                  </button>
+                  {transaction.type === 'CONVERSION' ? (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">
+                        <div className="text-red-600">
+                          -{formatAmount(transaction.amount, transaction.currency)}
+                        </div>
+                        {transaction.toAmount !== null && transaction.toCurrency && (
+                          <div className="text-green-600 mt-1">
+                            +{formatAmount(transaction.toAmount, transaction.toCurrency)}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleDelete(transaction.id)}
+                        className="text-red-600 text-xs mt-1"
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <Text
+                        className={`font-semibold text-lg ${
+                          transaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      >
+                        {transaction.type === 'INCOME' ? '+' : '-'}
+                        {formatAmount(transaction.amount, transaction.currency)}
+                      </Text>
+                      <button
+                        onClick={() => handleDelete(transaction.id)}
+                        className="text-red-600 text-xs mt-1"
+                      >
+                        Удалить
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </Card>

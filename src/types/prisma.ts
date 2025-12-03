@@ -2,7 +2,7 @@
 // Используются вместо enum, так как SQLite не поддерживает enums
 
 export type Currency = 'USD' | 'RSD' | 'RUB' | 'VND' | 'EUR'
-export type TransactionType = 'INCOME' | 'EXPENSE'
+export type TransactionType = 'INCOME' | 'EXPENSE' | 'CONVERSION'
 
 // Валидация валюты
 export function isValidCurrency(value: string): value is Currency {
@@ -11,6 +11,6 @@ export function isValidCurrency(value: string): value is Currency {
 
 // Валидация типа транзакции
 export function isValidTransactionType(value: string): value is TransactionType {
-  return ['INCOME', 'EXPENSE'].includes(value)
+  return ['INCOME', 'EXPENSE', 'CONVERSION'].includes(value)
 }
 

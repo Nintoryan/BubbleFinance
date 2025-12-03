@@ -30,16 +30,23 @@ export default function NewTransactionPage() {
     currency: 'USD' as Currency,
     date: new Date().toISOString().split('T')[0],
     note: '',
+    // Поля для конвертации
+    toAccountId: '',
+    toAmount: '',
+    toCurrency: 'USD' as Currency,
   })
 
   useEffect(() => {
     loadData()
   }, [])
 
-  // Загружаем категории только при изменении типа транзакции
+  // Загружаем категории только при изменении типа транзакции (не для CONVERSION)
   useEffect(() => {
-    if (formData.type) {
+    if (formData.type && formData.type !== 'CONVERSION') {
       loadCategories(formData.type)
+    } else {
+      setCategories([])
+      setFormData((prev) => ({ ...prev, categoryId: '' }))
     }
   }, [formData.type])
 
@@ -52,6 +59,16 @@ export default function NewTransactionPage() {
       }
     }
   }, [formData.accountId, accounts])
+
+  // Устанавливаем валюту получателя при выборе счёта получателя
+  useEffect(() => {
+    if (formData.toAccountId && accounts.length > 0) {
+      const account = accounts.find((a) => a.id === formData.toAccountId)
+      if (account && account.currency !== formData.toCurrency) {
+        setFormData((prev) => ({ ...prev, toCurrency: account.currency }))
+      }
+    }
+  }, [formData.toAccountId, accounts])
 
   const loadData = async () => {
     try {
@@ -104,13 +121,31 @@ export default function NewTransactionPage() {
     setLoading(true)
 
     try {
+      const payload: any = {
+        type: formData.type,
+        accountId: formData.accountId,
+        amount: parseFloat(formData.amount),
+        currency: formData.currency,
+        date: formData.date,
+        note: formData.note || null,
+      }
+
+      // Для обычных транзакций добавляем категорию
+      if (formData.type !== 'CONVERSION') {
+        payload.categoryId = formData.categoryId
+      }
+
+      // Для конвертации добавляем поля получателя
+      if (formData.type === 'CONVERSION') {
+        payload.toAccountId = formData.toAccountId
+        payload.toAmount = parseFloat(formData.toAmount)
+        payload.toCurrency = formData.toCurrency
+      }
+
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          amount: parseFloat(formData.amount),
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (res.ok) {
@@ -138,15 +173,26 @@ export default function NewTransactionPage() {
             <Text className="mb-2">Тип</Text>
             <Select
               value={formData.type}
-              onValueChange={(value) => setFormData({ ...formData, type: value as TransactionType })}
+              onValueChange={(value) => {
+                const newType = value as TransactionType
+                setFormData({
+                  ...formData,
+                  type: newType,
+                  // Сбрасываем поля конвертации при смене типа
+                  toAccountId: newType === 'CONVERSION' ? formData.toAccountId : '',
+                  toAmount: newType === 'CONVERSION' ? formData.toAmount : '',
+                  toCurrency: newType === 'CONVERSION' ? formData.toCurrency : 'USD',
+                })
+              }}
             >
               <SelectItem value="EXPENSE">Расход</SelectItem>
               <SelectItem value="INCOME">Доход</SelectItem>
+              <SelectItem value="CONVERSION">Конвертация</SelectItem>
             </Select>
           </div>
 
           <div>
-            <Text className="mb-2">Счёт</Text>
+            <Text className="mb-2">{formData.type === 'CONVERSION' ? 'Счёт откуда' : 'Счёт'}</Text>
             <Select
               value={formData.accountId}
               onValueChange={(value) => {
@@ -166,22 +212,53 @@ export default function NewTransactionPage() {
             </Select>
           </div>
 
-          <div>
-            <Text className="mb-2">Категория</Text>
-            <Select
-              value={formData.categoryId}
-              onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
-            >
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </Select>
-          </div>
+          {formData.type !== 'CONVERSION' && (
+            <div>
+              <Text className="mb-2">Категория</Text>
+              <Select
+                value={formData.categoryId}
+                onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
+              >
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </Select>
+            </div>
+          )}
+
+          {formData.type === 'CONVERSION' && (
+            <>
+              <div>
+                <Text className="mb-2">Счёт куда</Text>
+                <Select
+                  value={formData.toAccountId}
+                  onValueChange={(value) => {
+                    const account = accounts.find((a) => a.id === value)
+                    setFormData({
+                      ...formData,
+                      toAccountId: value,
+                      toCurrency: account?.currency || 'USD',
+                    })
+                  }}
+                >
+                  {accounts
+                    .filter((acc) => acc.id !== formData.accountId)
+                    .map((acc) => (
+                      <SelectItem key={acc.id} value={acc.id}>
+                        {acc.name}
+                      </SelectItem>
+                    ))}
+                </Select>
+              </div>
+            </>
+          )}
 
           <div>
-            <Text className="mb-2">Сумма</Text>
+            <Text className="mb-2">
+              {formData.type === 'CONVERSION' ? 'Сумма откуда' : 'Сумма'}
+            </Text>
             <div className="flex gap-2">
               <TextInput
                 type="number"
@@ -205,6 +282,36 @@ export default function NewTransactionPage() {
               </Select>
             </div>
           </div>
+
+          {formData.type === 'CONVERSION' && (
+            <div>
+              <Text className="mb-2">Сумма куда</Text>
+              <div className="flex gap-2">
+                <TextInput
+                  type="number"
+                  step="0.01"
+                  value={formData.toAmount}
+                  onChange={(e) => setFormData({ ...formData, toAmount: e.target.value })}
+                  placeholder="0.00"
+                  required
+                  className="flex-1"
+                />
+                <Select
+                  value={formData.toCurrency}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, toCurrency: value as Currency })
+                  }
+                  className="w-24"
+                >
+                  {currencies.map((curr) => (
+                    <SelectItem key={curr} value={curr}>
+                      {curr}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </div>
+            </div>
+          )}
 
           <div>
             <Text className="mb-2">Дата</Text>

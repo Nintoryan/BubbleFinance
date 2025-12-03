@@ -13,17 +13,37 @@ export async function GET() {
     const accountsWithBalance = await Promise.all(
       accounts.map(async (account) => {
         try {
-          const transactions = await prisma.transaction.findMany({
+          // Получаем все транзакции где этот счет является основным (fromAccount для конвертаций)
+          const fromTransactions = await prisma.transaction.findMany({
             where: { accountId: account.id },
           })
 
-          const balance = transactions.reduce((sum, t) => {
+          // Получаем все транзакции где этот счет является получателем (toAccount для конвертаций)
+          const toTransactions = await prisma.transaction.findMany({
+            where: { toAccountId: account.id },
+          })
+
+          let balance = 0
+
+          // Обрабатываем транзакции где счет является основным
+          for (const t of fromTransactions) {
             if (t.type === 'INCOME') {
-              return sum + t.amount
-            } else {
-              return sum - t.amount
+              balance += t.amount
+            } else if (t.type === 'EXPENSE') {
+              balance -= t.amount
+            } else if (t.type === 'CONVERSION' && t.toAmount !== null) {
+              // Для конвертации вычитаем сумму откуда
+              balance -= t.amount
             }
-          }, 0)
+          }
+
+          // Обрабатываем транзакции где счет является получателем (только конвертации)
+          for (const t of toTransactions) {
+            if (t.type === 'CONVERSION' && t.toAmount !== null) {
+              // Для конвертации добавляем сумму куда
+              balance += t.toAmount
+            }
+          }
 
           return {
             ...account,

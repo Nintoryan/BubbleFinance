@@ -19,7 +19,8 @@ model Account {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  transactions Transaction[]
+  transactions      Transaction[] @relation("TransactionFromAccount")
+  transactionsTo    Transaction[] @relation("TransactionToAccount")
 
   @@map("accounts")
 }
@@ -41,18 +42,24 @@ model Category {
 
 model Transaction {
   id         String   @id @default(uuid())
-  type       String   // INCOME | EXPENSE
-  accountId  String
-  categoryId String
-  amount     Int // храним в минимальных единицах (центах, копейках и т.д.)
-  currency   String   // USD | RSD | RUB | VND | EUR
+  type       String   // INCOME | EXPENSE | CONVERSION
+  accountId  String   // для INCOME/EXPENSE - основной счёт, для CONVERSION - счёт откуда (fromAccount)
+  categoryId String?  // опционально, не требуется для CONVERSION
+  amount     Int      // для INCOME/EXPENSE - сумма, для CONVERSION - сумма откуда (fromAmount)
+  currency   String   // для INCOME/EXPENSE - валюта, для CONVERSION - валюта откуда (fromCurrency)
   date       DateTime
   note       String?
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  account  Account  @relation(fields: [accountId], references: [id], onDelete: Restrict)
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  // Поля для конвертации (опциональные)
+  toAccountId String? // счёт куда (только для CONVERSION)
+  toAmount    Int?     // сумма куда в минимальных единицах (только для CONVERSION)
+  toCurrency  String?  // валюта куда (только для CONVERSION)
+
+  account   Account   @relation("TransactionFromAccount", fields: [accountId], references: [id], onDelete: Restrict)
+  toAccount Account?  @relation("TransactionToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
+  category  Category? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
 
   @@map("transactions")
 }

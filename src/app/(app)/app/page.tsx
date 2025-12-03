@@ -27,9 +27,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadData()
-  }, [baseCurrency])
+  }, [])
 
-  const loadData = async () => {
+  const loadData = async (currencyOverride?: Currency) => {
     setLoading(true)
     try {
       const [accountsRes, settingsRes] = await Promise.all([
@@ -47,15 +47,20 @@ export default function DashboardPage() {
         setAccounts(Array.isArray(accountsData) ? accountsData : [])
       }
 
-      let currentBaseCurrency: Currency = 'USD' // Fallback значение
-      if (!settingsRes.ok) {
-        console.error('Failed to fetch settings:', settingsRes.status)
-        setBaseCurrency('USD') // Fallback значение
-      } else {
-        const settings = await settingsRes.json()
-        currentBaseCurrency = (settings.baseCurrency || 'USD') as Currency
-        setBaseCurrency(currentBaseCurrency)
+      let currentBaseCurrency: Currency = currencyOverride || 'USD' // Используем переданную валюту или fallback
+      if (!currencyOverride) {
+        // Загружаем валюту из настроек только если не передан override
+        if (!settingsRes.ok) {
+          console.error('Failed to fetch settings:', settingsRes.status)
+          currentBaseCurrency = 'USD' // Fallback значение
+        } else {
+          const settings = await settingsRes.json()
+          currentBaseCurrency = (settings.baseCurrency || 'USD') as Currency
+        }
       }
+      
+      // Обновляем состояние валюты
+      setBaseCurrency(currentBaseCurrency)
 
       // Загружаем статистику за последние 30 дней
       const to = new Date()
@@ -79,13 +84,27 @@ export default function DashboardPage() {
   }
 
   const updateBaseCurrency = async (currency: Currency) => {
-    await fetch('/api/settings', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ baseCurrency: currency }),
-    })
-    setBaseCurrency(currency)
-    loadData()
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ baseCurrency: currency }),
+      })
+      
+      if (res.ok) {
+        // Обновляем состояние только после успешного ответа
+        setBaseCurrency(currency)
+        // Перезагружаем данные с новой валютой (не загружая настройки, чтобы не перезаписать)
+        await loadData(currency)
+      } else {
+        console.error('Failed to update base currency:', res.status)
+        const errorData = await res.json().catch(() => ({}))
+        alert(errorData.error || 'Ошибка при обновлении валюты')
+      }
+    } catch (error) {
+      console.error('Error updating base currency:', error)
+      alert('Ошибка при обновлении валюты')
+    }
   }
 
   if (loading) {

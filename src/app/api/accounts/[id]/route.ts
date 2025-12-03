@@ -23,17 +23,33 @@ export async function PUT(
     })
 
     // Вычисляем баланс
-    const transactions = await prisma.transaction.findMany({
+    const fromTransactions = await prisma.transaction.findMany({
       where: { accountId: id },
     })
 
-    const balance = transactions.reduce((sum, t) => {
+    const toTransactions = await prisma.transaction.findMany({
+      where: { toAccountId: id },
+    })
+
+    let balance = 0
+
+    // Обрабатываем транзакции где счет является основным
+    for (const t of fromTransactions) {
       if (t.type === 'INCOME') {
-        return sum + t.amount
-      } else {
-        return sum - t.amount
+        balance += t.amount
+      } else if (t.type === 'EXPENSE') {
+        balance -= t.amount
+      } else if (t.type === 'CONVERSION' && t.toAmount !== null) {
+        balance -= t.amount
       }
-    }, 0)
+    }
+
+    // Обрабатываем транзакции где счет является получателем (только конвертации)
+    for (const t of toTransactions) {
+      if (t.type === 'CONVERSION' && t.toAmount !== null) {
+        balance += t.toAmount
+      }
+    }
 
     return NextResponse.json({ ...account, balance })
   } catch (error) {
@@ -50,12 +66,15 @@ export async function DELETE(
   try {
     const { id } = params
 
-    // Проверяем, есть ли транзакции
-    const transactionCount = await prisma.transaction.count({
+    // Проверяем, есть ли транзакции (как основной счет или как получатель)
+    const fromTransactionCount = await prisma.transaction.count({
       where: { accountId: id },
     })
+    const toTransactionCount = await prisma.transaction.count({
+      where: { toAccountId: id },
+    })
 
-    if (transactionCount > 0) {
+    if (fromTransactionCount > 0 || toTransactionCount > 0) {
       return NextResponse.json(
         { error: 'Cannot delete account with existing transactions' },
         { status: 400 }
